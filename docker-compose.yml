@@ -1,0 +1,90 @@
+version: "3.7"
+
+services:
+    web:
+        image: eisandbar/filesync:nginx
+        build:
+            context: ./nginx/
+            dockerfile: Dockerfile
+        depends_on:
+            - app
+            - upload
+            - stream
+        restart: on-failure
+        networks:
+            web:
+        ports:
+            - "0.0.0.0:5100:5100"
+
+    app:
+        image: eisandbar/filesync:app
+        build: ./src/server
+        # deploy:
+        #     replicas: 3
+        depends_on:
+            - db
+        volumes:
+            - ./:/app
+        networks:
+            - db
+            - web        
+        restart: on-failure
+        environment:
+            POSTGRES_USER: pguser
+            POSTGRES_PASSWORD: secret
+            POSTGRES_DB: pgdb
+            DB_HOST: db
+            DB_PORT: 5432
+    
+    upload:
+        image: eisandbar/filesync:upload
+        build: ./src/muxer
+        # deploy:
+        #     replicas: 3
+        depends_on:
+            - app
+        volumes:
+            - ./:/app
+        networks:
+            - files
+            - web        
+        restart: on-failure
+    
+    stream:
+        image: eisandbar/filesync:stream
+        build: ./src/streamer
+        # deploy:
+        #     replicas: 3
+        volumes:
+            - ./:/app
+        networks:
+            - files
+            - web        
+        restart: on-failure
+    
+    db:
+        image: postgres
+        volumes:
+            - ./postgres/conf/my-postgres.conf:/etc/postgresql/postgresql.conf
+            # - ./postgres/conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+            - ./postgres/data:/var/lib/postgresql/data
+        
+        command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+        networks:
+            - db
+        environment:
+            POSTGRES_USER: pguser
+            POSTGRES_PASSWORD: secret
+            POSTGRES_DB: pgdb
+
+
+networks:
+    web:
+        driver: bridge
+    db:
+        driver: bridge
+    files:
+        driver: bridge
+
+volumes:
+      postgres:
