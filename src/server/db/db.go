@@ -42,4 +42,5 @@ type User struct {
 	Id int64 `gorm:"primaryKey"`
 	Name string
 	RoomId int64
+	CreatedAt time.Time
 }
