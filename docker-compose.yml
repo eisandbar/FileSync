@@ -16,6 +16,7 @@ services:
         ports:
             - "0.0.0.0:5100:5100"
             - "0.0.0.0:5300:5300"
+            - "0.0.0.0:5500:5500"
 
     app:
         image: eisandbar/filesync:app
