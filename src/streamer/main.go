@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	const dir = "files"
+	const dir = "../app/files"
 	const port = 8080
 
 	router := mux.NewRouter()
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir(dir)))
 
-	fmt.Printf("Starting server on %v\n", port)
+	fmt.Printf("Starting streaming server on %v\n", port)
 	log.Printf("Serving %s on HTTP port: %v\n", dir, port)
 
 
